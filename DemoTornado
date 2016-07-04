@@ -28,10 +28,9 @@ class MainHandler(tornado.web.RequestHandler):
         # sha1加密算法
         # 如果是来自微信的请求，则回复echostr
         if hashcode == signature:
-	    self.write(echostr)
+            self.write(echostr)
 	
     def post(self):
-	print 'post'
         str_xml = self.request.body  # 获得post来的数据
         xml = etree.fromstring(str_xml)  # 进行XML解析
         content = xml.find("Content").text  # 获得用户所输入的内容
