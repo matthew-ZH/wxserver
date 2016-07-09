@@ -6,6 +6,9 @@ import tornado.options
 import hashlib
 from lxml import etree
 import time
+import urllib
+import urllib2
+import json
 
 from tornado.options import define, options
 define("port", default=80, help="run on the given port", type=int)
@@ -37,7 +40,16 @@ class MainHandler(tornado.web.RequestHandler):
         msgType = xml.find("MsgType").text
         fromUser = xml.find("FromUserName").text
         toUser = xml.find("ToUserName").text
-        return self.render('reply_text.xml', toUser = fromUser,  fromUser = toUser, createTime = int(time.time()), content = u"我现在还在开发中，还没有什么功能，您刚才说的是：" + content)
+
+        res = searchMusic(content)
+        content_json = json.load(res)
+        songs = content_json['result']['songs']
+        if len(songs) == 0:
+            return self.render('reply_text.xml', toUser = fromUser,  fromUser = toUser, createTime = int(time.time()), content = u"找不到你需要的音乐:" + content)
+        song = songs[0]
+        music_title = song['bMusic']['name']
+        music_url = song['mp3Url']
+        return self.render('reply_music.xml', toUser = fromUser,  fromUser = toUser, createTime = int(time.time()), TITLE = music_title, MUSIC_Url = music_url, HQ_MUSIC_Url = music_url)
 
 application = tornado.web.Application([
     (r"/weixin", MainHandler),
@@ -48,3 +60,13 @@ if __name__ == "__main__":
     httpserver = tornado.httpserver.HTTPServer(application)
     httpserver.listen(options.port)
     tornado.ioloop.IOLoop.instance().start()
+
+def searchMusic(text):
+    data = {'s':text,'offset':0,'limit':1, 'type':1}
+    body = urllib.urlencode(data)
+    header = {'Cookie':'appver=1.5.0.75771','Referer':'http://music.163.com/'}
+    url = 'http://music.163.com/api/search/pc'
+    req = urllib2.Request(url=url,data=body,headers=header)
+    res_data = urllib2.urlopen(req)
+    res = res_data.read()
+    return res
