@@ -8,6 +8,6 @@
 <Description><![CDATA[{{DESCRIPTION}}]]></Description>
 <MusicUrl><![CDATA[{{MUSIC_Url}}]]></MusicUrl>
 <HQMusicUrl><![CDATA[{{HQ_MUSIC_Url}}]]></HQMusicUrl>
-<ThumbMediaId><![CDATA[media_id]]></ThumbMediaId>
+<ThumbMediaId><![CDATA[{{media_id}}]]></ThumbMediaId>
 </Music>
 </xml>
