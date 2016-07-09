@@ -32,13 +32,14 @@ def getMediaId(url):
     file = open(file_name, 'wb')
     file.write(thumb_conn.read())
     file.close()
-
+    print access
     upload_url = 'https://api.weixin.qq.com/cgi-bin/media/upload?access_token='+access+'&type=thumb'
     file_upload = {'image': open('./tmp.jpg', 'rb')}
     postdata = urllib.urlencode(file_upload)
     req = urllib2.Request(url=upload_url, data=postdata)
     res = urllib2.urlopen(req)
     res_data = json.load(res)
+    print res_data
     mediaId = res_data['media_id']
     return
 
@@ -82,7 +83,7 @@ class MainHandler(tornado.web.RequestHandler):
         song = songs[0]
         music_title = song['bMusic']['name']
         music_url = "http://weixincourse-weixincourse.stor.sinaapp.com/mysongs.mp3"
-        mediaId = getMediaId()
+        mediaId = getMediaId(song['artists'][0]['picUrl'])
         #music_url = song['mp3Url']
 	    # print music_title,music_url
         return self.render('reply_music.xml', toUser = fromUser,  fromUser = toUser, createTime = int(time.time()), TITLE = music_title, DESCRIPTION = 'haha', MUSIC_Url = music_url, HQ_MUSIC_Url = music_url, media_id = mediaId)
@@ -104,7 +105,7 @@ if __name__ == "__main__":
     content_access = json.load(res)
     access = content_access['access_token']
     time = content_access['expires_in']
-
+    print access
     tornado.ioloop.IOLoop.instance().start()
 
 
