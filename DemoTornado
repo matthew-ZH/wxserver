@@ -3,12 +3,14 @@ import tornado.ioloop
 import tornado.web
 import tornado.httpserver
 import tornado.options
+from tornado.netutil import bind_sockets
 import hashlib
 from lxml import etree
 import time
 import urllib
 import urllib2
 import json
+import socket
 
 from tornado.options import define, options
 define("port", default=80, help="run on the given port", type=int)
@@ -58,7 +60,9 @@ application = tornado.web.Application([
 if __name__ == "__main__":
     tornado.options.parse_command_line()
     httpserver = tornado.httpserver.HTTPServer(application)
-    httpserver.listen(options.port)
+    sockets = bind_sockets(options.port, address='', reuse_port=True)
+    httpserver.add_sockets(sockets)
+    # httpserver.listen(options.port)
     tornado.ioloop.IOLoop.instance().start()
 
 def searchMusic(text):
