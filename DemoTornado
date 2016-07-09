@@ -15,6 +15,16 @@ import socket
 from tornado.options import define, options
 define("port", default=80, help="run on the given port", type=int)
 
+def searchMusic(text):
+    data = {'s':text,'offset':0,'limit':1, 'type':1}
+    body = urllib.urlencode(data)
+    header = {'Cookie':'appver=1.5.0.75771','Referer':'http://music.163.com/'}
+    url = 'http://music.163.com/api/search/pc'
+    req = urllib2.Request(url=url,data=body,headers=header)
+    res_data = urllib2.urlopen(req)
+    res = res_data
+    return res
+
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         # 获取输入参数
@@ -36,6 +46,7 @@ class MainHandler(tornado.web.RequestHandler):
             self.write(echostr)
 	
     def post(self):
+	print 'receive'
         str_xml = self.request.body  # 获得post来的数据
         xml = etree.fromstring(str_xml)  # 进行XML解析
         content = xml.find("Content").text  # 获得用户所输入的内容
@@ -50,8 +61,10 @@ class MainHandler(tornado.web.RequestHandler):
             return self.render('reply_text.xml', toUser = fromUser,  fromUser = toUser, createTime = int(time.time()), content = u"找不到你需要的音乐:" + content)
         song = songs[0]
         music_title = song['bMusic']['name']
-        music_url = song['mp3Url']
-        return self.render('reply_music.xml', toUser = fromUser,  fromUser = toUser, createTime = int(time.time()), TITLE = music_title, MUSIC_Url = music_url, HQ_MUSIC_Url = music_url)
+        music_url = "http://weixincourse-weixincourse.stor.sinaapp.com/mysongs.mp3"
+	 #music_url = song['mp3Url']
+	print music_title,music_url
+        return self.render('reply_music.xml', toUser = fromUser,  fromUser = toUser, createTime = int(time.time()), TITLE = music_title, DESCRIPTION = '', MUSIC_Url = music_url, HQ_MUSIC_Url = music_url)
 
 application = tornado.web.Application([
     (r"/weixin", MainHandler),
@@ -64,13 +77,3 @@ if __name__ == "__main__":
     httpserver.add_sockets(sockets)
     # httpserver.listen(options.port)
     tornado.ioloop.IOLoop.instance().start()
-
-def searchMusic(text):
-    data = {'s':text,'offset':0,'limit':1, 'type':1}
-    body = urllib.urlencode(data)
-    header = {'Cookie':'appver=1.5.0.75771','Referer':'http://music.163.com/'}
-    url = 'http://music.163.com/api/search/pc'
-    req = urllib2.Request(url=url,data=body,headers=header)
-    res_data = urllib2.urlopen(req)
-    res = res_data.read()
-    return res
