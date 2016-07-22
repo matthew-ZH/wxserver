@@ -1,0 +1,47 @@
+#encoding:utf-8
+import tornado.ioloop
+import tornado.web
+import tornado.httpserver
+import tornado.options
+import urlparse
+import hashlib
+from lxml import etree
+import time
+
+from tornado.netutil import bind_sockets
+from tornado.options import define, options
+define("port", default=8888, help="run on the given port", type=int)
+
+class Host:
+    def __init__(self,host,name):
+        self.host = host
+        self.name = name
+
+def deal(schema, desc, name):
+    parsedTuple = urlparse.urlparse(schema)
+    print schema
+    print parsedTuple.hostname
+    print parsedTuple.query
+
+
+class MainHandler(tornado.web.RequestHandler):
+    def post(self):
+        str_xml = self.request.body  # 获得post来的数据
+        print str_xml
+        xml = etree.fromstring(str_xml)  # 进行XML解析
+        schema = xml.find("schema").text  # 获得用户所输入的内容
+        desc = xml.find("desc").text
+        name = xml.find("name").text
+        deal(schema=schema, desc=desc, name=name)
+        self.write("success")
+
+application = tornado.web.Application([
+    (r"/schema", MainHandler),
+])
+
+if __name__ == "__main__":
+    tornado.options.parse_command_line()
+    httpserver = tornado.httpserver.HTTPServer(application)
+    sockets = bind_sockets(options.port, address='', reuse_port=True)
+    httpserver.add_sockets(sockets)
+    tornado.ioloop.IOLoop.instance().start()
